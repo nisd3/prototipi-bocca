@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prototipi — Stato di fatto della bocca</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:#F5F5F3;color:#111;padding:24px;min-height:100vh;}
+.page{max-width:780px;margin:0 auto;}
+.header{margin-bottom:2rem;}
+.header h1{font-size:22px;font-weight:600;color:#111;margin-bottom:4px;}
+.header p{font-size:13px;color:#888;}
+.proto-section{background:#fff;border:0.5px solid #E0E0DC;border-radius:12px;padding:20px;margin-bottom:20px;}
+.proto-header{display:flex;align-items:baseline;gap:10px;margin-bottom:6px;}
+.proto-num{font-size:11px;font-weight:500;color:#888;background:#F5F5F3;border-radius:20px;padding:2px 8px;}
+.proto-title{font-size:16px;font-weight:500;color:#111;}
+.proto-desc{font-size:12px;color:#888;margin-bottom:14px;line-height:1.6;}
+.proto-frame{background:#F5F5F3;border-radius:10px;padding:14px;}
+.arch{display:flex;justify-content:center;gap:2px;}
+.tooth-wrap{display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer;}
+.tooth-wrap.upper{flex-direction:column-reverse;}
+.tnum{font-size:8px;color:#BBBBBB;}
+.tbox{width:28px;height:34px;border-radius:5px;border:1px solid #DDDDDD;background:#fff;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:border-color .1s;}
+.tbox:hover{border-color:#AAAAAA;cursor:pointer;}
+.tbox.sel{border:2px solid #378ADD;background:#EEF5FB;}
+.tbox.bridge-part{border:1.5px dashed #639922;background:#F0F8EC;}
+.tbox.bridge-selecting{border:2px solid #639922;background:#EAF3DE;}
+.midv{width:1px;background:#E0E0DC;height:36px;align-self:center;}
+.vi{width:32px;height:28px;border-radius:5px;border:1px solid #DDDDDD;background:#F5F5F3;text-align:center;font-size:12px;color:#111;font-family:inherit;}
+.vi:focus{outline:none;border-color:#378ADD;background:#EEF5FB;}
+.vi.alarm{border-color:#E24B4A;background:#FEF0F0;color:#A32D2D;}
+.bs{width:32px;height:26px;border-radius:5px;border:1px solid #DDDDDD;background:#F5F5F3;font-size:10px;color:#888;cursor:pointer;font-family:inherit;}
+.bs.on{background:#FEF0F0;border-color:#E24B4A;color:#A32D2D;font-weight:600;}
+.fb{flex:1;height:28px;border-radius:5px;border:1px solid #DDDDDD;background:#F5F5F3;font-size:11px;color:#888;cursor:pointer;font-family:inherit;}
+.fb.on{background:#FDF3E0;border-color:#BA7517;color:#633806;font-weight:500;}
+.tooth-pip{width:24px;height:24px;border-radius:5px;border:1px solid #DDDDDD;background:#F5F5F3;display:flex;align-items:center;justify-content:center;font-size:8px;color:#888;cursor:pointer;}
+.tooth-pip.active{background:#EEF5FB;border-color:#378ADD;color:#0C447C;font-weight:600;}
+.tooth-pip.done{background:#EAF3DE;border-color:#3B6D11;color:#27500A;}
+.tooth-pip.alarm{background:#FEF0F0;border-color:#A32D2D;color:#A32D2D;}
+.tab-btn{padding:6px 14px;border-radius:8px;border:1px solid #DDDDDD;background:#F5F5F3;font-size:12px;color:#888;cursor:pointer;font-family:inherit;}
+.tab-btn.active{background:#EEF5FB;border-color:#378ADD;color:#0C447C;font-weight:500;}
+.leg-line{width:18px;height:3px;border-radius:2px;display:inline-block;vertical-align:middle;}
+.card{background:#fff;border:1px solid #E8E8E4;border-radius:8px;padding:10px;}
+.sl{font-size:9px;color:#999;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;}
+label{font-size:10px;color:#999;}
+canvas{display:block;}
+button:active{transform:scale(.97);}
+.cond-group-label{font-size:9px;color:#AAAAAA;text-transform:uppercase;letter-spacing:.05em;padding:4px 0 2px;border-top:1px solid #F0F0EC;margin-top:4px;}
+.cond-group-label:first-child{border-top:none;margin-top:0;padding-top:0;}
+.bridge-hint{background:#EAF3DE;border-radius:6px;padding:7px 10px;font-size:11px;color:#27500A;margin-top:6px;}
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="header">
+  <h1>Prototipi — Stato di fatto della bocca</h1>
+  <p>3 prototipi interattivi &nbsp;·&nbsp; Aprile 2026 &nbsp;·&nbsp; Product / Design</p>
+</div>
+
+<!-- ══ 01 ODONTOGRAMMA ══ -->
+<div class="proto-section">
+  <div class="proto-header"><span class="proto-num">01</span><span class="proto-title">Odontogramma — diagnosi standard</span></div>
+  <div class="proto-desc">Clicca un dente per assegnare diagnosi. I simboli si sovrappongono. Anteprima in tempo reale prima di confermare. Il ponte collega denti contigui selezionando primo e ultimo dente.</div>
+  <div class="proto-frame">
+    <div style="font-size:10px;color:#999;text-align:center;margin-bottom:3px;">Arcata superiore</div>
+    <div class="arch" id="p1-upper"></div>
+    <div style="display:flex;justify-content:center;margin:2px 0;"><div class="midv"></div></div>
+    <div class="arch" id="p1-lower"></div>
+    <div style="font-size:10px;color:#999;text-align:center;margin-top:3px;margin-bottom:10px;">Arcata inferiore</div>
+    <div style="display:grid;grid-template-columns:1fr 195px;gap:8px;">
+      <div class="card" id="p1-left" style="min-height:80px;"><div style="font-size:11px;color:#999;">Clicca un dente per iniziare</div></div>
+      <div class="card" id="p1-right" style="min-height:80px;overflow-y:auto;max-height:320px;"><div style="font-size:11px;color:#999;text-align:center;padding:16px 0;">← Seleziona dente</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 02 PARODONTALE ══ -->
+<div class="proto-section">
+  <div class="proto-header"><span class="proto-num">02</span><span class="proto-title">Inserimento dati — cartella parodontale</span></div>
+  <div class="proto-desc">Flusso guidato dente per dente. Usa Tab per avanzare tra i campi — dopo il 6° valore passa automaticamente al dente successivo. Clicca i pallini per navigare liberamente.</div>
+  <div class="proto-frame">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <div>
+        <div style="font-size:13px;font-weight:500;" id="p2-title">Dente 18</div>
+        <div style="font-size:10px;color:#999;" id="p2-sub">Arcata superiore · 1 di 16</div>
+      </div>
+      <div style="display:flex;gap:3px;flex-wrap:wrap;max-width:260px;" id="p2-pips"></div>
+    </div>
+    <div style="height:3px;background:#E0E0DC;border-radius:2px;margin-bottom:10px;"><div id="p2-prog" style="height:3px;background:#378ADD;border-radius:2px;width:6%;transition:width .3s;"></div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+      <div class="card">
+        <div class="sl">Sondaggio vestibolare (mm)</div>
+        <div style="display:flex;gap:3px;margin-bottom:4px;">
+          <div><input class="vi" id="p2-v0" type="number" min="0" max="12" placeholder="–" oninput="p2val(this,0,'v')" onkeydown="p2key(event,0,'v')"><label>Dist.</label></div>
+          <div><input class="vi" id="p2-v1" type="number" min="0" max="12" placeholder="–" oninput="p2val(this,1,'v')" onkeydown="p2key(event,1,'v')"><label>Centr.</label></div>
+          <div><input class="vi" id="p2-v2" type="number" min="0" max="12" placeholder="–" oninput="p2val(this,2,'v')" onkeydown="p2key(event,2,'v')"><label>Mes.</label></div>
+        </div>
+        <div class="sl" style="margin-top:6px;">Sanguinamento</div>
+        <div style="display:flex;gap:3px;">
+          <div><button class="bs" id="p2-bv0" onclick="p2bleed(0,'v')">–</button><label>D</label></div>
+          <div><button class="bs" id="p2-bv1" onclick="p2bleed(1,'v')">–</button><label>C</label></div>
+          <div><button class="bs" id="p2-bv2" onclick="p2bleed(2,'v')">–</button><label>M</label></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="sl">Sondaggio linguale (mm)</div>
+        <div style="display:flex;gap:3px;margin-bottom:4px;">
+          <div><input class="vi" id="p2-l0" type="number" min="0" max="12" placeholder="–" oninput="p2val(this,0,'l')" onkeydown="p2key(event,0,'l')"><label>Dist.</label></div>
+          <div><input class="vi" id="p2-l1" type="number" min="0" max="12" placeholder="–" oninput="p2val(this,1,'l')" onkeydown="p2key(event,1,'l')"><label>Centr.</label></div>
+          <div><input class="vi" id="p2-l2" type="number" min="0" max="12" placeholder="–" oninput="p2val(this,2,'l')" onkeydown="p2key(event,2,'l')"><label>Mes.</label></div>
+        </div>
+        <div class="sl" style="margin-top:6px;">Sanguinamento</div>
+        <div style="display:flex;gap:3px;">
+          <div><button class="bs" id="p2-bl0" onclick="p2bleed(0,'l')">–</button><label>D</label></div>
+          <div><button class="bs" id="p2-bl1" onclick="p2bleed(1,'l')">–</button><label>C</label></div>
+          <div><button class="bs" id="p2-bl2" onclick="p2bleed(2,'l')">–</button><label>M</label></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+      <div class="card"><div class="sl">Forcazione</div><div style="display:flex;gap:3px;" id="p2-forc"><button class="fb on" onclick="p2forc(0)">–</button><button class="fb" onclick="p2forc(1)">I</button><button class="fb" onclick="p2forc(2)">II</button><button class="fb" onclick="p2forc(3)">III</button></div></div>
+      <div class="card"><div class="sl">Mobilità</div><div style="display:flex;gap:3px;" id="p2-mob"><button class="fb on" onclick="p2mob(0)">–</button><button class="fb" onclick="p2mob(1)">M1</button><button class="fb" onclick="p2mob(2)">M2</button><button class="fb" onclick="p2mob(3)">M3</button></div></div>
+    </div>
+    <canvas id="p2-chart" height="50" style="width:100%;margin-bottom:10px;"></canvas>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <button onclick="p2goto(p2idx-1)" style="padding:6px 14px;border-radius:8px;border:1px solid #DDDDDD;background:#F5F5F3;font-size:12px;cursor:pointer;font-family:inherit;">← Prec.</button>
+      <div style="font-size:11px;color:#999;" id="p2-complete"></div>
+      <button onclick="p2goto(p2idx+1)" style="padding:6px 14px;border-radius:8px;border:1px solid #378ADD;background:#EEF5FB;font-size:12px;color:#0C447C;font-weight:500;cursor:pointer;font-family:inherit;">Prossimo →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 03 STORICO ══ -->
+<div class="proto-section">
+  <div class="proto-header"><span class="proto-num">03</span><span class="proto-title">Storico parodontale — confronto nel tempo</span></div>
+  <div class="proto-desc">Vista A: confronto dell'intera arcata tra due date. Clicca un dente nel grafico per aprire la Vista B con l'evoluzione nel tempo di quel singolo dente.</div>
+  <div class="proto-frame">
+    <div style="display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
+      <button class="tab-btn active" id="tab-a" onclick="switchTab('a')">Vista A — arcata completa</button>
+      <button class="tab-btn" id="tab-b" onclick="switchTab('b')">Vista B — dente singolo</button>
+      <div style="margin-left:auto;display:flex;gap:5px;" id="storico-stats">
+        <div style="background:#FEF0F0;border-radius:6px;padding:3px 8px;font-size:10px;color:#A32D2D;">Sondaggio –1.2mm</div>
+        <div style="background:#EAF3DE;border-radius:6px;padding:3px 8px;font-size:10px;color:#27500A;">Sanguinamento –18%</div>
+      </div>
+    </div>
+    <div id="storico-a">
+      <div style="font-size:10px;color:#999;margin-bottom:4px;">Gen 2024 vs Gen 2025 · Clicca un dente per il dettaglio</div>
+      <canvas id="p3-chart-a" height="100" style="width:100%;cursor:pointer;"></canvas>
+      <div style="display:flex;gap:10px;margin-top:6px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:#999;"><span class="leg-line" style="background:#B5D4F4;"></span>Gen 2024</div>
+        <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:#999;"><span class="leg-line" style="background:#378ADD;"></span>Stabile</div>
+        <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:#999;"><span class="leg-line" style="background:#97C459;"></span>Migliorato</div>
+        <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:#999;"><span class="leg-line" style="background:#F09595;"></span>Peggiorato</div>
+      </div>
+    </div>
+    <div id="storico-b" style="display:none;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <div style="font-size:12px;font-weight:500;" id="p3b-title">Dente 16 — evoluzione nel tempo</div>
+        <button onclick="switchTab('a')" style="font-size:10px;color:#888;background:none;border:1px solid #DDDDDD;border-radius:5px;padding:2px 8px;cursor:pointer;font-family:inherit;">← Arcata</button>
+      </div>
+      <canvas id="p3-chart-b" height="130" style="width:100%;"></canvas>
+      <div style="display:flex;gap:10px;margin-top:6px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:#999;"><span class="leg-line" style="background:#378ADD;"></span>Distale</div>
+        <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:#999;"><span class="leg-line" style="background:#534AB7;"></span>Centrale</div>
+        <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:#999;"><span class="leg-line" style="background:#1D9E75;"></span>Mesiale</div>
+        <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:#999;"><span class="leg-line" style="background:#E24B4A;border-top:1px dashed #E24B4A;height:0;"></span>Soglia 3mm</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+<script>
+/* ══ P1 — ODONTOGRAMMA ══ */
+const upper1=[18,17,16,15,14,13,12,11,21,22,23,24,25,26,27,28];
+const lower1=[48,47,46,45,44,43,42,41,31,32,33,34,35,36,37,38];
+const allT1=[...upper1,...lower1];
+
+const condGroups=[
+  {group:'Struttura',items:[
+    {id:'carie',label:'Carie',color:'#E24B4A'},
+    {id:'frattura',label:'Frattura',color:'#E24B4A'},
+    {id:'usura',label:'Erosione / usura',color:'#BA7517'},
+    {id:'cervicale',label:'Lesione cervicale',color:'#BA7517'},
+  ]},
+  {group:'Pulpari e periapicali',items:[
+    {id:'pulpite',label:'Pulpite',color:'#A30000'},
+    {id:'ascesso',label:'Ascesso periapicale',color:'#A30000'},
+    {id:'cisti',label:'Cisti radicolare',color:'#A30000'},
+  ]},
+  {group:'Stato del dente',items:[
+    {id:'mancante',label:'Mancante',color:'#888780'},
+    {id:'estrarre',label:'Da estrarre',color:'#E24B4A'},
+    {id:'incluso',label:'Incluso / non erotto',color:'#B4B2A9'},
+    {id:'radice',label:'Radice residua',color:'#888780'},
+  ]},
+  {group:'Restauri',items:[
+    {id:'otturazione',label:'Otturazione',color:'#378ADD'},
+    {id:'corona',label:'Corona',color:'#378ADD'},
+    {id:'intarsio',label:'Intarsio / onlay',color:'#378ADD'},
+    {id:'perno',label:'Perno',color:'#534AB7'},
+    {id:'devit',label:'Devitalizzato',color:'#534AB7'},
+  ]},
+  {group:'Protesi e impianti',items:[
+    {id:'impianto',label:'Impianto',color:'#639922'},
+    {id:'ponte',label:'Ponte',color:'#639922'},
+    {id:'protesi_mob',label:'Protesi mobile',color:'#639922'},
+    {id:'protesi_tot',label:'Protesi totale',color:'#639922'},
+  ]},
+  {group:'Parodontale visibile',items:[
+    {id:'recessione',label:'Recessione gengivale',color:'#BA7517'},
+    {id:'mobilita',label:'Mobilità',color:'#BA7517'},
+    {id:'forcazione',label:'Forcazione esposta',color:'#BA7517'},
+  ]},
+];
+const allConds=condGroups.flatMap(g=>g.items);
+const STATI=['preesistente','pianificato','completato'];
+const STATI_LABEL={preesistente:'Preesistente',pianificato:'Pianificato',completato:'Completato'};
+const STATI_STYLE={
+  preesistente:{border:'1.5px dashed #888780',bg:'#F1EFE8',badge:'#888780',badgeBg:'#E8E8E4'},
+  pianificato: {border:'2px solid #BA7517', bg:'#FDF3E0',badge:'#BA7517',badgeBg:'#FAEEDA'},
+  completato:  {border:'2px solid #3B6D11', bg:'#EAF3DE',badge:'#3B6D11',badgeBg:'#C0DD97'},
+};
+
+let sel1=null, diags1={}, bridges1=[], bridgeMode=false, bridgeStart=null;
+
+function svgT1(num){
+  const d=diags1[num]||[];
+  const inBridge=bridges1.some(b=>b.includes(num));
+  if(!d.length&&!inBridge)return`<svg viewBox="0 0 22 28"><rect x="1" y="1" width="20" height="26" rx="5" fill="none" stroke="#DDD" stroke-width="1"/></svg>`;
+  const c=d.length?d[d.length-1].color:(inBridge?'#639922':null);
+  const strokeC=inBridge?'#639922':'#DDD';
+  const strokeW=inBridge?'1.8':'1';
+  const strokeDash=inBridge?'4 2':'none';
+  if(c==='#888780')return`<svg viewBox="0 0 22 28"><rect x="1" y="1" width="20" height="26" rx="5" fill="#F1EFE8" stroke="#888780" stroke-width="1" stroke-dasharray="3 2"/><line x1="3" y1="3" x2="19" y2="25" stroke="#888780" stroke-width="1.5"/><line x1="19" y1="3" x2="3" y2="25" stroke="#888780" stroke-width="1.5"/></svg>`;
+  let layers=`<rect x="1" y="1" width="20" height="26" rx="5" fill="none" stroke="${strokeC}" stroke-width="${strokeW}" stroke-dasharray="${strokeDash}"/>`;
+  d.forEach(x=>{
+    if(x.id==='corona') layers+=`<rect x="0" y="0" width="22" height="28" rx="6" fill="none" stroke="#378ADD" stroke-width="2.5"/>`;
+    else if(x.id==='devit') layers+=`<ellipse cx="11" cy="21" rx="7" ry="5" fill="#534AB7" opacity=".28"/>`;
+    else if(x.id==='perno') layers+=`<line x1="11" y1="15" x2="11" y2="27" stroke="#534AB7" stroke-width="2.5" stroke-linecap="round"/>`;
+    else if(x.id==='impianto') layers+=`<line x1="11" y1="14" x2="11" y2="27" stroke="#639922" stroke-width="2"/><line x1="7" y1="18" x2="15" y2="18" stroke="#639922" stroke-width="1.2"/><line x1="7" y1="23" x2="15" y2="23" stroke="#639922" stroke-width="1.2"/>`;
+    else if(x.id==='mancante'||x.id==='radice') layers+=`<line x1="3" y1="3" x2="19" y2="25" stroke="#888" stroke-width="1.5"/><line x1="19" y1="3" x2="3" y2="25" stroke="#888" stroke-width="1.5"/>`;
+    else if(x.id==='estrarre') layers+=`<line x1="3" y1="3" x2="19" y2="25" stroke="#E24B4A" stroke-width="1.5"/><line x1="19" y1="3" x2="3" y2="25" stroke="#E24B4A" stroke-width="1.5"/>`;
+    else if(x.id==='incluso') layers+=`<rect x="1" y="1" width="20" height="26" rx="5" fill="none" stroke="#B4B2A9" stroke-width="1.5" stroke-dasharray="4 2"/>`;
+    else if(x.id==='recessione') layers+=`<line x1="3" y1="7" x2="19" y2="7" stroke="#BA7517" stroke-width="1.5"/><line x1="11" y1="5" x2="11" y2="2" stroke="#BA7517" stroke-width="1.5"/>`;
+    else if(x.id==='mobilita') layers+=`<text x="17" y="8" font-size="7" fill="#BA7517" font-weight="600">M</text>`;
+    else if(x.id==='forcazione') layers+=`<line x1="11" y1="24" x2="6" y2="27" stroke="#BA7517" stroke-width="1.5"/><line x1="11" y1="24" x2="16" y2="27" stroke="#BA7517" stroke-width="1.5"/>`;
+    else if(x.id==='frattura') layers+=`<line x1="9" y1="2" x2="13" y2="26" stroke="#E24B4A" stroke-width="1.5" stroke-dasharray="2 1.5"/>`;
+    else if(x.id==='usura'||x.id==='cervicale') layers+=`<rect x="1" y="19" width="20" height="8" fill="#EF9F27" opacity=".4"/>`;
+    else if(x.id==='otturazione'||x.id==='intarsio') layers+=`<rect x="6" y="9" width="10" height="9" rx="2" fill="#378ADD" opacity=".8"/>`;
+    else if(x.id==='pulpite') layers+=`<circle cx="11" cy="24" r="3" fill="#A30000"/><line x1="11" y1="21" x2="11" y2="17" stroke="#A30000" stroke-width="1.2"/><line x1="11" y1="21" x2="7" y2="18" stroke="#A30000" stroke-width="1"/><line x1="11" y1="21" x2="15" y2="18" stroke="#A30000" stroke-width="1"/>`;
+    else if(x.id==='ascesso') layers+=`<circle cx="11" cy="24" r="4" fill="#A30000" stroke="#A30000" stroke-width="1"/><text x="11" y="27" font-size="6" fill="white" text-anchor="middle" font-weight="bold">!</text>`;
+    else if(x.id==='cisti') layers+=`<circle cx="11" cy="23" r="5" fill="#FECACA" stroke="#A30000" stroke-width="1.2" stroke-dasharray="2 1.5"/>`;
+    else layers+=`<circle cx="11" cy="14" r="5" fill="${x.color}" opacity=".8"/>`;
+  });
+  // stato overlay sul dente (prende l'ultimo stato della lista)
+  const lastD=d[d.length-1];
+  if(lastD&&lastD.stato==='preesistente') layers+=`<rect x="1" y="1" width="20" height="26" rx="5" fill="none" stroke="#888" stroke-width="1.5" stroke-dasharray="3 2"/>`;
+  if(lastD&&lastD.stato==='completato') layers+=`<polyline points="5,14 9,18 17,10" fill="none" stroke="#3B6D11" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+  return`<svg viewBox="0 0 22 28">${layers}</svg>`;
+}
+
+function renderA1(ids,cid,up){
+  const c=document.getElementById(cid);if(!c)return;c.innerHTML='';
+  ids.forEach((n,i)=>{
+    if(i===ids.length/2){const m=document.createElement('div');m.className='midv';c.appendChild(m);}
+    const inBridge=bridges1.some(b=>b.includes(n));
+    let cls='tbox';
+    if(sel1===n)cls+=' sel';
+    else if(bridgeMode&&bridgeStart===n)cls+=' bridge-selecting';
+    else if(inBridge)cls+=' bridge-part';
+    const w=document.createElement('div');w.className='tooth-wrap'+(up?' upper':'');
+    w.innerHTML=`<div class="${cls}" id="tb1-${n}">${svgT1(n)}</div><div class="tnum">${n}</div>`;
+    w.querySelector('.'+cls.split(' ')[0]).onclick=()=>handleClick1(n);
+    c.appendChild(w);
+  });
+}
+
+function handleClick1(n){
+  if(bridgeMode){
+    if(bridgeStart===null){bridgeStart=n;renderAll1();return;}
+    if(bridgeStart===n){bridgeStart=null;renderAll1();return;}
+    const i1=allT1.indexOf(bridgeStart),i2=allT1.indexOf(n);
+    if(i1<0||i2<0){bridgeStart=null;renderAll1();return;}
+    const from=Math.min(i1,i2),to=Math.max(i1,i2);
+    const bTeeth=allT1.slice(from,to+1);
+    if(bTeeth.length<2||bTeeth.length>6){alert('Il ponte deve collegare tra 2 e 6 denti contigui.');bridgeStart=null;renderAll1();return;}
+    bridges1.push(bTeeth);
+    bTeeth.forEach(t=>{if(!diags1[t])diags1[t]=[];if(!diags1[t].find(x=>x.id==='ponte'))diags1[t].push({id:'ponte',label:'Ponte',color:'#639922'});});
+    bridgeMode=false;bridgeStart=null;sel1=null;renderAll1();renderDiagList1();
+    document.getElementById('p1-left').innerHTML='<div style="font-size:11px;color:#27500A;background:#EAF3DE;border-radius:6px;padding:6px 8px;">Ponte aggiunto. Clicca un dente per continuare.</div>';
+    document.getElementById('p1-right').innerHTML='<div style="font-size:11px;color:#999;text-align:center;padding:16px 0;">← Seleziona dente</div>';
+    return;
+  }
+  sel1=n;renderAll1();renderDiagList1();renderRight1();
+}
+
+function renderAll1(){
+  renderA1(upper1,'p1-upper',true);
+  renderA1(lower1,'p1-lower',false);
+}
+
+function renderDiagList1(){
+  const L=document.getElementById('p1-left');
+  if(!sel1&&!bridgeMode){L.innerHTML='<div style="font-size:11px;color:#999;">Clicca un dente per iniziare</div>';return;}
+  if(bridgeMode){
+    L.innerHTML=`<div style="font-size:12px;font-weight:500;margin-bottom:6px;">Modalità ponte</div>
+    <div class="bridge-hint">${bridgeStart===null?'Clicca il <strong>primo dente</strong> del ponte':'Dente di inizio: <strong>'+bridgeStart+'</strong><br>Ora clicca il <strong>dente finale</strong>'}</div>
+    <button onclick="cancelBridge1()" style="margin-top:8px;width:100%;padding:5px;border-radius:6px;border:1px solid #DDD;background:#F5F5F3;font-size:11px;cursor:pointer;font-family:inherit;">Annulla</button>`;
+    return;
+  }
+  const d=diags1[sel1]||[];
+  L.innerHTML=`<div style="font-size:12px;font-weight:500;margin-bottom:5px;">Dente ${sel1}</div>`+
+    (d.length?d.map(x=>{
+      const s=STATI_STYLE[x.stato||'pianificato'];
+      const sl=STATI_LABEL[x.stato||'pianificato'];
+      return`<div style="display:flex;align-items:center;gap:5px;font-size:11px;padding:5px 0;border-bottom:1px solid #F0F0EC;">
+        <div style="width:8px;height:8px;border-radius:2px;background:${x.color};flex-shrink:0;"></div>
+        <div style="flex:1;">
+          <div>${x.label}</div>
+          <div style="display:flex;gap:4px;margin-top:3px;">
+            ${STATI.map(st=>`<button onclick="setStato1(${sel1},'${x.id}','${st}')" style="padding:1px 6px;border-radius:10px;border:1px solid ${st===(x.stato||'pianificato')?s.badge:'#DDD'};background:${st===(x.stato||'pianificato')?s.badgeBg:'#F5F5F3'};font-size:9px;color:${st===(x.stato||'pianificato')?s.badge:'#999'};cursor:pointer;font-family:inherit;">${STATI_LABEL[st]}</button>`).join('')}
+          </div>
+        </div>
+        <button onclick="rmD1(${sel1},'${x.id}')" style="margin-left:4px;color:#E24B4A;background:none;border:none;cursor:pointer;font-size:15px;line-height:1;">×</button>
+      </div>`;
+    }).join(''):'<div style="font-size:11px;color:#999;">Nessun problema registrato</div>');
+}
+
+function renderRight1(){
+  const R=document.getElementById('p1-right');
+  if(!sel1){R.innerHTML='<div style="font-size:11px;color:#999;text-align:center;padding:16px 0;">← Seleziona dente</div>';return;}
+  let html=`<div style="font-size:12px;font-weight:500;margin-bottom:6px;">Aggiungi problema</div>`;
+  condGroups.forEach(g=>{
+    html+=`<div class="cond-group-label">${g.group}</div>`;
+    html+=g.items.map(c=>`<button onclick="addD1('${c.id}')" style="display:flex;align-items:center;gap:6px;width:100%;padding:5px 7px;border-radius:5px;border:1px solid #E8E8E4;background:#F5F5F3;font-size:11px;color:#111;cursor:pointer;margin-bottom:3px;font-family:inherit;text-align:left;">
+      <div style="width:8px;height:8px;border-radius:2px;background:${c.color};flex-shrink:0;"></div>${c.label}
+    </button>`).join('');
+  });
+  html+=`<div class="cond-group-label">Strumenti</div>
+  <button onclick="startBridge1()" style="display:flex;align-items:center;gap:6px;width:100%;padding:5px 7px;border-radius:5px;border:1px solid #639922;background:#EAF3DE;font-size:11px;color:#27500A;cursor:pointer;margin-bottom:3px;font-family:inherit;">
+    <div style="width:8px;height:8px;border-radius:2px;background:#639922;flex-shrink:0;"></div>+ Aggiungi ponte
+  </button>`;
+  R.innerHTML=html;
+}
+
+function addD1(id){
+  if(id==='ponte'){startBridge1();return;}
+  const c=allConds.find(x=>x.id===id);
+  if(!diags1[sel1])diags1[sel1]=[];
+  if(!diags1[sel1].find(x=>x.id===id))diags1[sel1].push({...c,stato:'pianificato'});
+  renderAll1();renderDiagList1();
+}
+function setStato1(tooth,condId,stato){
+  const d=diags1[tooth];if(!d)return;
+  const entry=d.find(x=>x.id===condId);if(!entry)return;
+  entry.stato=stato;
+  renderAll1();renderDiagList1();
+}
+function rmD1(t,id){
+  if(id==='ponte'){bridges1=bridges1.filter(b=>!b.includes(t));allT1.forEach(tt=>{if(diags1[tt])diags1[tt]=diags1[tt].filter(x=>x.id!=='ponte');});}
+  else if(diags1[t])diags1[t]=diags1[t].filter(x=>x.id!==id);
+  renderAll1();renderDiagList1();
+}
+function startBridge1(){bridgeMode=true;bridgeStart=null;sel1=null;renderAll1();renderDiagList1();document.getElementById('p1-right').innerHTML='<div style="font-size:11px;color:#999;text-align:center;padding:10px 0;">Clicca i denti sul grafico</div>';}
+function cancelBridge1(){bridgeMode=false;bridgeStart=null;renderAll1();renderDiagList1();renderRight1();}
+
+renderAll1();
+
+/* ══ P2 — PARODONTALE ══ */
+const allT2=[18,17,16,15,14,13,12,11,21,22,23,24,25,26,27,28,48,47,46,45,44,43,42,41,31,32,33,34,35,36,37,38];
+const upperT2=[18,17,16,15,14,13,12,11,21,22,23,24,25,26,27,28];
+let p2idx=0;
+const p2d={};allT2.forEach(t=>p2d[t]={v:[null,null,null],l:[null,null,null],bv:[0,0,0],bl:[0,0,0],forc:0,mob:0});
+function p2lab(t){return upperT2.includes(t)?'Arcata superiore':'Arcata inferiore';}
+function p2load(){
+  const t=allT2[p2idx],d=p2d[t];
+  document.getElementById('p2-title').textContent='Dente '+t;
+  document.getElementById('p2-sub').textContent=p2lab(t)+' · '+(p2idx+1)+' di '+allT2.length;
+  document.getElementById('p2-prog').style.width=Math.round(((p2idx+1)/allT2.length)*100)+'%';
+  ['v','l'].forEach(s=>{
+    d[s].forEach((v,i)=>{const el=document.getElementById('p2-'+s+i);el.value=v!==null?v:'';el.className='vi'+(v!==null&&v>3?' alarm':'');});
+    d['b'+s].forEach((v,i)=>{const b=document.getElementById('p2-b'+s+i);b.className='bs'+(v?' on':'');b.textContent=v?'S':'–';});
+  });
+  document.querySelectorAll('#p2-forc .fb').forEach((b,i)=>b.className='fb'+(i===d.forc?' on':''));
+  document.querySelectorAll('#p2-mob .fb').forEach((b,i)=>b.className='fb'+(i===d.mob?' on':''));
+  const f=[...d.v,...d.l].filter(v=>v!==null).length;
+  document.getElementById('p2-complete').textContent=f===0?'Nessun valore':f+'/6 valori';
+  renderPips2();drawP2Chart();
+}
+function renderPips2(){
+  const c=document.getElementById('p2-pips');c.innerHTML='';
+  allT2.slice(0,16).forEach((t,i)=>{
+    const d=p2d[t],f=[...d.v,...d.l].filter(v=>v!==null).length>0,a=f&&[...d.v,...d.l].some(v=>v>3);
+    const pip=document.createElement('div');pip.className='tooth-pip'+(i===p2idx?' active':a?' alarm':f?' done':'');
+    pip.textContent=t;pip.onclick=()=>p2goto(i);c.appendChild(pip);
+  });
+}
+function p2val(el,idx,side){
+  const t=allT2[p2idx],v=el.value===''?null:Math.min(12,Math.max(0,parseInt(el.value)||0));
+  p2d[t][side][idx]=v;el.className='vi'+(v!==null&&v>3?' alarm':'');
+  const f=[...p2d[t].v,...p2d[t].l].filter(x=>x!==null).length;
+  document.getElementById('p2-complete').textContent=f===0?'Nessun valore':f+'/6 valori';
+  renderPips2();drawP2Chart();
+}
+function p2key(e,idx,side){
+  if(e.key==='Tab'||e.key==='Enter'){e.preventDefault();
+    const ord=['p2-v0','p2-v1','p2-v2','p2-l0','p2-l1','p2-l2'],ci=ord.indexOf('p2-'+side+idx);
+    if(ci<ord.length-1)document.getElementById(ord[ci+1]).focus();else p2goto(p2idx+1);
+  }
+}
+function p2bleed(idx,side){
+  const t=allT2[p2idx],k='b'+side;p2d[t][k][idx]=p2d[t][k][idx]?0:1;
+  const b=document.getElementById('p2-b'+side+idx),v=p2d[t][k][idx];
+  b.className='bs'+(v?' on':'');b.textContent=v?'S':'–';
+}
+function p2forc(g){p2d[allT2[p2idx]].forc=g;document.querySelectorAll('#p2-forc .fb').forEach((b,i)=>b.className='fb'+(i===g?' on':''));}
+function p2mob(m){p2d[allT2[p2idx]].mob=m;document.querySelectorAll('#p2-mob .fb').forEach((b,i)=>b.className='fb'+(i===m?' on':''));}
+function p2goto(i){if(i<0||i>=allT2.length)return;p2idx=i;p2load();}
+function drawP2Chart(){
+  const cv=document.getElementById('p2-chart');if(!cv)return;
+  const dpr=window.devicePixelRatio||1,W=cv.parentElement.clientWidth-28,H=50;
+  cv.width=W*dpr;cv.height=H*dpr;cv.style.width=W+'px';cv.style.height=H+'px';
+  const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
+  const n=allT2.length,cw=W/n,mx=10;
+  allT2.forEach((t,i)=>{
+    const d=p2d[t],vals=[...d.v,...d.l].filter(v=>v!==null);if(!vals.length)return;
+    const mv=Math.max(...vals),bh=(mv/mx)*(H-10);
+    ctx.fillStyle=i===p2idx?'#378ADD':mv>3?'#F09595':'#C0DD97';
+    ctx.beginPath();ctx.roundRect(i*cw+1,H-10-bh,cw-2,bh,2);ctx.fill();
+    ctx.fillStyle='rgba(128,128,128,0.4)';ctx.font='6px sans-serif';ctx.textAlign='center';ctx.fillText(t,i*cw+cw/2,H-1);
+  });
+  const ay=H-10-(3/mx)*(H-10);
+  ctx.strokeStyle='rgba(226,75,74,0.35)';ctx.lineWidth=1;ctx.setLineDash([3,2]);
+  ctx.beginPath();ctx.moveTo(0,ay);ctx.lineTo(W,ay);ctx.stroke();ctx.setLineDash([]);
+}
+p2load();
+
+/* ══ P3 — STORICO ══ */
+const stT=[18,17,16,15,14,13,12,11,21,22,23,24,25,26,27,28];
+const ps24=[3,3,6,3,3,2,2,3,2,2,3,4,3,6,4,2];
+const ps25=[2,2,4,2,2,2,2,2,2,2,2,3,2,4,3,2];
+const tB={
+  18:{label:'Dente 18',s:[[2,2,3,2,2],[3,2,2,2,2],[2,2,2,2,2]]},
+  17:{label:'Dente 17',s:[[3,3,3,3,2],[4,3,3,3,2],[3,3,2,2,2]]},
+  16:{label:'Dente 16',s:[[5,5,5,4,4],[6,6,5,5,4],[5,4,4,3,3]]},
+  15:{label:'Dente 15',s:[[3,3,2,2,2],[3,2,2,2,2],[2,2,2,2,2]]},
+  14:{label:'Dente 14',s:[[3,4,3,3,3],[4,3,3,3,3],[3,3,3,3,2]]},
+  13:{label:'Dente 13',s:[[2,2,2,2,2],[2,2,2,2,2],[2,2,2,2,2]]},
+  12:{label:'Dente 12',s:[[2,2,2,2,2],[2,2,2,2,2],[2,2,2,2,2]]},
+  11:{label:'Dente 11',s:[[3,3,3,2,2],[3,3,2,2,2],[3,2,2,2,2]]},
+  21:{label:'Dente 21',s:[[2,3,2,2,2],[3,2,2,2,2],[2,2,2,2,2]]},
+  22:{label:'Dente 22',s:[[2,2,2,2,2],[2,2,2,2,2],[2,2,2,2,2]]},
+  23:{label:'Dente 23',s:[[3,3,2,2,2],[3,2,2,2,2],[2,2,2,2,2]]},
+  24:{label:'Dente 24',s:[[4,4,3,3,3],[4,3,3,3,3],[3,3,3,3,2]]},
+  25:{label:'Dente 25',s:[[3,3,4,3,3],[4,3,3,3,3],[3,3,3,3,2]]},
+  26:{label:'Dente 26',s:[[4,4,4,3,3],[5,5,4,4,3],[4,4,3,3,3]]},
+  27:{label:'Dente 27',s:[[3,3,3,3,3],[4,4,3,3,3],[3,3,3,3,2]]},
+  28:{label:'Dente 28',s:[[2,2,3,2,2],[3,2,2,2,2],[2,2,2,2,2]]},
+};
+const dates=['Gen 24','Mar 24','Giu 24','Set 24','Gen 25'];
+let curBT=16;
+function switchTab(tab){
+  document.getElementById('storico-a').style.display=tab==='a'?'block':'none';
+  document.getElementById('storico-b').style.display=tab==='b'?'block':'none';
+  document.getElementById('tab-a').className='tab-btn'+(tab==='a'?' active':'');
+  document.getElementById('tab-b').className='tab-btn'+(tab==='b'?' active':'');
+  document.getElementById('storico-stats').style.display=tab==='a'?'flex':'none';
+  setTimeout(tab==='a'?drawCA:drawCB,30);
+}
+function drawCA(){
+  const cv=document.getElementById('p3-chart-a');if(!cv)return;
+  const dpr=window.devicePixelRatio||1,W=cv.parentElement.clientWidth-28,H=100;
+  cv.width=W*dpr;cv.height=H*dpr;cv.style.width=W+'px';cv.style.height=H+'px';
+  const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
+  const n=stT.length,cw=W/n,mx=8,tp=8,ch=H-18;
+  for(let g=0;g<=mx;g+=2){const y=tp+(g/mx)*ch;ctx.strokeStyle='rgba(128,128,128,0.1)';ctx.lineWidth=.5;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();ctx.fillStyle='rgba(128,128,128,0.4)';ctx.font='7px sans-serif';ctx.textAlign='left';ctx.fillText(g,1,y-1);}
+  const ay=tp+(3/mx)*ch;ctx.strokeStyle='rgba(226,75,74,0.25)';ctx.lineWidth=1;ctx.setLineDash([3,2]);ctx.beginPath();ctx.moveTo(0,ay);ctx.lineTo(W,ay);ctx.stroke();ctx.setLineDash([]);
+  cv._t=[];
+  stT.forEach((t,i)=>{
+    const v24=ps24[i],v25=ps25[i],cx=i*cw+cw/2,bw=cw*.3,h24=(v24/mx)*ch,h25=(v25/mx)*ch;
+    ctx.fillStyle='#B5D4F4';ctx.beginPath();ctx.roundRect(cx-bw-1,H-18-h24,bw,h24,1);ctx.fill();
+    ctx.fillStyle=v25>v24?'#F09595':v25<v24?'#97C459':'#378ADD';ctx.beginPath();ctx.roundRect(cx+1,H-18-h25,bw,h25,1);ctx.fill();
+    ctx.fillStyle='rgba(128,128,128,0.5)';ctx.font='7px sans-serif';ctx.textAlign='center';ctx.fillText(t,cx,H-4);
+    cv._t.push({x:i*cw,w:cw,t});
+  });
+  cv.onclick=e=>{const r=cv.getBoundingClientRect(),mx2=(e.clientX-r.left)*(W/r.width);if(cv._t)cv._t.forEach(d=>{if(mx2>=d.x&&mx2<d.x+d.w&&tB[d.t]){curBT=d.t;document.getElementById('p3b-title').textContent=tB[d.t].label+' — evoluzione nel tempo';switchTab('b');}});};
+}
+function drawCB(){
+  const cv=document.getElementById('p3-chart-b');if(!cv)return;
+  const dpr=window.devicePixelRatio||1,W=cv.parentElement.clientWidth-28,H=130;
+  cv.width=W*dpr;cv.height=H*dpr;cv.style.width=W+'px';cv.style.height=H+'px';
+  const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
+  const td=tB[curBT];if(!td)return;
+  const cols=['#378ADD','#534AB7','#1D9E75'],mx=8,tp=12,ch=H-24,n=dates.length,ox=24,sx=(W-ox-10)/(n-1);
+  for(let g=0;g<=mx;g+=2){const y=tp+(g/mx)*ch;ctx.strokeStyle='rgba(128,128,128,0.1)';ctx.lineWidth=.5;ctx.beginPath();ctx.moveTo(ox,y);ctx.lineTo(W,y);ctx.stroke();ctx.fillStyle='rgba(128,128,128,0.45)';ctx.font='7px sans-serif';ctx.textAlign='right';ctx.fillText(g+'mm',ox-3,y+3);}
+  const ay=tp+(3/mx)*ch;ctx.strokeStyle='rgba(226,75,74,0.35)';ctx.lineWidth=1;ctx.setLineDash([3,2]);ctx.beginPath();ctx.moveTo(ox,ay);ctx.lineTo(W,ay);ctx.stroke();ctx.setLineDash([]);
+  td.s.forEach((s,si)=>{
+    ctx.strokeStyle=cols[si];ctx.lineWidth=2;ctx.setLineDash([]);ctx.beginPath();
+    s.forEach((v,i)=>{const x=ox+i*sx,y=tp+(v/mx)*ch;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});ctx.stroke();
+    s.forEach((v,i)=>{const x=ox+i*sx,y=tp+(v/mx)*ch;ctx.fillStyle=cols[si];ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fill();ctx.fillStyle='rgba(50,50,50,0.6)';ctx.font='8px sans-serif';ctx.textAlign='center';ctx.fillText(v,x,y-6);});
+  });
+  dates.forEach((d,i)=>{const x=ox+i*sx;ctx.fillStyle='rgba(128,128,128,0.5)';ctx.font='8px sans-serif';ctx.textAlign='center';ctx.fillText(d,x,H-5);});
+}
+window.addEventListener('load',()=>{drawCA();drawP2Chart();});
+window.addEventListener('resize',()=>{drawCA();drawP2Chart();if(document.getElementById('storico-b').style.display!=='none')drawCB();});
+</script>
+</body>
+</html>
